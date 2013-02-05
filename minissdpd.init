@@ -1,0 +1,94 @@
+#!/bin/sh
+#
+# minissdpd	minissdpd short service description
+#
+# chkconfig:	345 85 15
+#
+# description:	minissdpd UPnP devices tracking daemon
+#
+# processname:	minissdpd
+# pidfile:	/var/run/minissdpd.pid
+#
+
+# Source function library
+. /etc/rc.d/init.d/functions
+
+# Get network config
+. /etc/sysconfig/network
+
+# Check that networking is up.
+if is_yes "${NETWORKING}"; then
+	if [ ! -f /var/lock/subsys/network -a "$1" != stop -a "$1" != status ]; then
+		msg_network_down "MiniSSDPd"
+		exit 1
+	fi
+else
+	exit 0
+fi
+
+MINISSDPD_OPTS=
+
+[ -f /etc/sysconfig/minissdpd ] && . /etc/sysconfig/minissdpd
+
+pidfile="/var/run/minissdpd.pid"
+
+start() {
+	# Check if the service is already running?
+	if [ -f /var/lock/subsys/minissdpd ]; then
+		msg_already_running "MiniSSDPd"
+		return
+	fi
+	msg_starting "MiniSSDPd"
+	daemon /usr/sbin/minissdpd
+	RETVAL=$?
+	[ $RETVAL -eq 0 ] && touch /var/lock/subsys/minissdpd
+}
+
+stop() {
+	if [ ! -f /var/lock/subsys/minissdpd ]; then
+		msg_not_running "MiniSSDPd"
+		return
+	fi
+	msg_stopping "MiniSSDPd"
+	killproc --pidfile $pidfile minissdpd
+	rm -f /var/lock/subsys/minissdpd
+}
+
+condrestart() {
+	if [ ! -f /var/lock/subsys/minissdpd ]; then
+		msg_not_running "MiniSSDPd"
+		RETVAL=$1
+		return
+	fi
+	stop
+	start
+}
+
+RETVAL=0
+case "$1" in
+  start)
+	start
+	;;
+  stop)
+	stop
+	;;
+  restart)
+	stop
+	start
+	;;
+  try-restart)
+	condrestart 0
+	;;
+  force-reload)
+	condrestart 7
+	;;
+  status)
+	status --pidfile $pidfile minissdpd
+	RETVAL=$?
+	;;
+  *)
+	msg_usage "$0 {start|stop|restart|try-restart|force-reload|status}"
+	exit 3
+esac
+
+exit $RETVAL

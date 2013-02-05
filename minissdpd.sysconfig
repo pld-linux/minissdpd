@@ -1,0 +1,7 @@
+# Customized settings for minissdpd
+
+# Define nice level for minissdpd
+#SERVICE_RUN_NICE_LEVEL="+0"
+
+# interface
+MINISSDPD_OPTS="-i eth0"
