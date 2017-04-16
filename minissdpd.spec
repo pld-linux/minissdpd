@@ -1,15 +1,16 @@
 Summary:	MiniSSDPd - daemon keeping track of UPnP devices up
 Summary(pl.UTF-8):	MiniSSDPd - demon śledzący czynne urządzenia UPnP
 Name:		minissdpd
-Version:	1.2
+Version:	1.5
 Release:	1
 License:	BSD
 Group:		Networking/Daemons
 Source0:	http://miniupnp.tuxfamily.org/files/%{name}-%{version}.tar.gz
-# Source0-md5:	3f831d9586861ba5548dc2142049cb46
+# Source0-md5:	be556df1550f49aedd39172ca0a68f48
 Source1:	%{name}.init
 Source2:	%{name}.sysconfig
 URL:		http://miniupnp.tuxfamily.org/minissdpd.html
+BuildRequires:	libnfnetlink-devel
 BuildRequires:	rpmbuild(macros) >= 1.228
 Requires(post,preun):	/sbin/chkconfig
 Requires:	rc-scripts
@@ -29,18 +30,20 @@ do listy urządzeń UPnP, pomijając proces wykrywania UPnP.
 %setup -q
 
 %build
+CFLAGS="%{rpmcflags}" \
 %{__make} \
-	CC="%{__cc}" \
-	CFLAGS="%{rpmcflags} -fno-strict-aliasing -Wall -D_GNU_SOURCE"
+	CC="%{__cc}"
 
 %install
 rm -rf $RPM_BUILD_ROOT
-install -d $RPM_BUILD_ROOT{%{_sbindir},%{_mandir}/man1,/etc/rc.d/init.d,/etc/sysconfig}
 
-install minissdpd $RPM_BUILD_ROOT%{_sbindir}
-cp -p minissdpd.1 $RPM_BUILD_ROOT%{_mandir}/man1
-install %{SOURCE1} $RPM_BUILD_ROOT/etc/rc.d/init.d/%{name}
-install %{SOURCE2} $RPM_BUILD_ROOT/etc/sysconfig/%{name}
+%{__make} install \
+	PREFIX=$RPM_BUILD_ROOT
+
+# replace init script by PLD specific one
+%{__rm} -r $RPM_BUILD_ROOT/etc/init.d
+install -Dp %{SOURCE1} $RPM_BUILD_ROOT/etc/rc.d/init.d/%{name}
+install -Dp %{SOURCE2} $RPM_BUILD_ROOT/etc/sysconfig/%{name}
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -58,6 +61,7 @@ fi
 %files
 %defattr(644,root,root,755)
 %doc Changelog.txt LICENSE README
+%lang(fr) %doc README.fr
 %attr(755,root,root) %{_sbindir}/minissdpd
 %attr(754,root,root) /etc/rc.d/init.d/%{name}
 %config(noreplace) %verify(not md5 mtime size) /etc/sysconfig/%{name}
