@@ -1,12 +1,12 @@
 Summary:	MiniSSDPd - daemon keeping track of UPnP devices up
 Summary(pl.UTF-8):	MiniSSDPd - demon śledzący czynne urządzenia UPnP
 Name:		minissdpd
-Version:	1.5
+Version:	1.6.0
 Release:	1
 License:	BSD
 Group:		Networking/Daemons
 Source0:	http://miniupnp.tuxfamily.org/files/%{name}-%{version}.tar.gz
-# Source0-md5:	be556df1550f49aedd39172ca0a68f48
+# Source0-md5:	93f151cd8322c9516ee18bfde41c9fa0
 Source1:	%{name}.init
 Source2:	%{name}.sysconfig
 URL:		http://miniupnp.tuxfamily.org/minissdpd.html
@@ -38,7 +38,7 @@ CFLAGS="%{rpmcflags}" \
 rm -rf $RPM_BUILD_ROOT
 
 %{__make} install \
-	PREFIX=$RPM_BUILD_ROOT
+	DESTDIR=$RPM_BUILD_ROOT
 
 # replace init script by PLD specific one
 %{__rm} -r $RPM_BUILD_ROOT/etc/init.d
